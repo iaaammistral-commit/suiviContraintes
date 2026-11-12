@@ -24,7 +24,7 @@ PortfolioA:
     exclusions: ["Russie"]
 """
 
-CSV = """date,portfolio,nom_titre,code_ISIN,quantite,prix_cloture,devise,valeur_boursiere_EUR,pays,secteur_GICS,indicateur_1_20,indicateur_alphanterique,emission_CO2_scope1_2_tCO2
+CSV = """date,portfolio,nom_titre,code_ISIN,quantite,prix_cloture,devise,valeur_boursiere_EUR,pays,secteur_GICS,indicateur_1_20,indicateur_alphanumerique,emission_CO2_scope1_2_tCO2e
 2026-01-10,PortfolioA,TitreA,FR0000000001,10,100,EUR,1000,France,Energy,5,IDX-01,2.0
 2026-01-10,PortfolioA,TitreB,RU0000000002,10,100,EUR,1000,Russie,Energy,5,IDX-02,2.0
 2026-01-11,PortfolioA,TitreA,FR0000000001,10,100,EUR,1000,France,Energy,5,IDX-01,2.0
@@ -42,6 +42,17 @@ def test_chargement_schema():
     assert len(df) == 4
     assert df["date"].dtype.kind == "M"
     assert df["valeur_boursiere_EUR"].sum() == 4000
+
+
+def test_alias_ancienne_orthographe():
+    csv_ancien = (
+        CSV.replace("indicateur_alphanumerique", "indicateur_alphanterique")
+        .replace("emission_CO2_scope1_2_tCO2e", "emission_CO2_scope1_2_tCO2")
+    )
+    df = charger_csv_texte(csv_ancien)
+    assert "indicateur_alphanumerique" in df.columns
+    assert "emission_CO2_scope1_2_tCO2e" in df.columns
+    assert len(df) == 4
 
 
 def test_exclusion_pays_violee(config):

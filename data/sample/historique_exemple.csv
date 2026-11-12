@@ -1,4 +1,4 @@
-date,portfolio,nom_titre,code_ISIN,quantite,prix_cloture,devise,valeur_boursiere_EUR,pays,secteur_GICS,indicateur_1_20,indicateur_alphanterique,emission_CO2_scope1_2_tCO2
+date,portfolio,nom_titre,code_ISIN,quantite,prix_cloture,devise,valeur_boursiere_EUR,pays,secteur_GICS,indicateur_1_20,indicateur_alphanumerique,emission_CO2_scope1_2_tCO2e
 2025-12-02,PortfolioA,LVMH,FR00000121014,233,717.96,EUR,167284.68,France,Consumer Discretionary,1,IDX-00A,2.1
 2025-12-17,PortfolioA,LVMH,FR00000121014,233,691.71,EUR,161168.43,France,Consumer Discretionary,1,IDX-00A,2.1
 2026-01-01,PortfolioA,LVMH,FR00000121014,233,702.39,EUR,163656.87,France,Consumer Discretionary,1,IDX-00A,2.1

@@ -31,7 +31,7 @@ PortfolioA:
   co2_moyen_max:
     type: moyenne_max_colonne
     description: Emission CO2 moyenne max (tCO2)
-    colonne: emission_CO2_scope1_2_tCO2
+    colonne: emission_CO2_scope1_2_tCO2e
     limite: 15
 
 PortfolioB:
@@ -56,7 +56,7 @@ PortfolioB:
   co2_moyen_max:
     type: moyenne_max_colonne
     description: Emission CO2 moyenne max (tCO2)
-    colonne: emission_CO2_scope1_2_tCO2
+    colonne: emission_CO2_scope1_2_tCO2e
     limite: 12
 
 PortfolioC:
