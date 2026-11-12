@@ -4,7 +4,11 @@ import pandas as pd
 import pytest
 import yaml
 
-from src.constraints import controler_inventaire, controler_periode
+from src.constraints import (
+    controler_inventaire,
+    controler_periode,
+    violations_par_ligne,
+)
 from src.loader import charger_csv_texte
 
 CONFIG = """
@@ -64,6 +68,25 @@ def test_poids_max_titre(config):
     poids = detail[detail["contrainte"] == "poids_max_titre"].iloc[0]
     assert poids["respectee"]
     assert abs(poids["valeur"] - 50.0) < 0.01
+
+
+def test_violations_par_ligne(config):
+    df = charger_csv_texte(CSV)
+    inventaire = df[(df["date"] == pd.Timestamp("2026-01-10"))]
+    violations = violations_par_ligne(inventaire, config)
+    titre_b = inventaire.index[inventaire["nom_titre"] == "TitreB"][0]
+    assert violations[titre_b] == ["exclusion_pays"]
+    titre_a = inventaire.index[inventaire["nom_titre"] == "TitreA"][0]
+    assert violations[titre_a] == []
+
+
+def test_violations_par_ligne_poids(config):
+    df = charger_csv_texte(CSV)
+    inventaire = df[(df["date"] == pd.Timestamp("2026-01-11"))].copy()
+    inventaire.loc[inventaire["nom_titre"] == "TitreA", "valeur_boursiere_EUR"] = 9000.0
+    violations = violations_par_ligne(inventaire, config)
+    titre_a = inventaire.index[inventaire["nom_titre"] == "TitreA"][0]
+    assert violations[titre_a] == ["poids_max_titre"]
 
 
 def test_controle_periode(config):

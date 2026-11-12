@@ -12,7 +12,11 @@ from src.charts import (
     graphique_valeurs_contrainte,
     graphique_violations_par_contrainte,
 )
-from src.constraints import controler_periode, contraintes_portefeuille
+from src.constraints import (
+    controler_periode,
+    contraintes_portefeuille,
+    violations_par_ligne,
+)
 from src.loader import charger_dossier, charger_drive
 
 RACINE = Path(__file__).resolve().parent
@@ -33,16 +37,32 @@ def _charger_donnees(source: str, dossier_id: str, dossier_local: str) -> pd.Dat
     return charger_dossier(dossier_local)
 
 
-def page_inventaires(df: pd.DataFrame) -> None:
+def _surligner_violations(ligne: pd.Series) -> list[str]:
+    if ligne["contraintes_violees"] != "-":
+        return ["background-color: #ffcccc"] * len(ligne)
+    return [""] * len(ligne)
+
+
+def page_inventaires(df: pd.DataFrame, config: dict) -> None:
     st.header("Inventaires")
     portefeuilles = sorted(df["portfolio"].unique())
     portefeuille = st.selectbox("Portefeuille", portefeuilles)
     dates = sorted(df[df["portfolio"] == portefeuille]["date"].unique())
     date = st.selectbox("Date", dates, index=len(dates) - 1)
-    inventaire = df[(df["portfolio"] == portefeuille) & (df["date"] == date)]
+    inventaire = df[(df["portfolio"] == portefeuille) & (df["date"] == date)].copy()
+
+    violations = violations_par_ligne(inventaire, config)
+    inventaire["contraintes_violees"] = violations.apply(
+        lambda l: ", ".join(l) if l else "-"
+    )
+
+    nb_violations = int((inventaire["contraintes_violees"] != "-").sum())
     st.metric("Lignes", len(inventaire))
     st.metric("Valeur totale (EUR)", f"{inventaire['valeur_boursiere_EUR'].sum():,.2f}")
-    st.dataframe(inventaire.drop(columns=["date", "portfolio"]), width="stretch")
+    st.metric("Lignes en violation", nb_violations)
+
+    affichage = inventaire.drop(columns=["date", "portfolio"])
+    st.dataframe(affichage.style.apply(_surligner_violations, axis=1), width="stretch")
 
 
 def page_contraintes(config: dict, portefeuilles: list[str]) -> None:
@@ -151,14 +171,25 @@ def main() -> None:
         st.error(f"Impossible de charger les donnees : {exc}")
         return
 
+    aujourdhui = pd.Timestamp.now().normalize()
+    dates_futures = int((df["date"] > aujourdhui).sum())
+    df = df[df["date"] <= aujourdhui].copy()
+    if df.empty:
+        st.error(
+            "Aucune donnee a date passee ou du jour : le fichier ne contient "
+            "que des dates futures."
+        )
+        return
+
     st.sidebar.success(
         f"{len(df)} lignes, {df['date'].nunique()} dates, "
         f"{df['portfolio'].nunique()} portefeuilles"
+        + (f" ({dates_futures} lignes futures ignorees)" if dates_futures else "")
     )
 
     onglet = st.tabs(["Inventaires", "Contraintes", "Controle"])
     with onglet[0]:
-        page_inventaires(df)
+        page_inventaires(df, config)
     with onglet[1]:
         page_contraintes(config, sorted(df["portfolio"].unique()))
     with onglet[2]:
