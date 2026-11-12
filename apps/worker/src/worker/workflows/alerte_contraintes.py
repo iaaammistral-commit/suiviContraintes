@@ -15,8 +15,8 @@ from mistralai.workflows.plugins.mistralai.connectors import (
 )
 
 
-drive_connector = connector("google_drive_mcp")
-gmail_connector = connector("gmail")
+drive_connector = connector("google_drive_mcp", credentials_name="test-AAM")
+gmail_connector = connector("gmail", credentials_name="test-AAM-gmail")
 
 DOSSIER_DRIVE_DEFAUT = "1O0Q7hFwKVqnkkyMZsBOfkojnC77YZao4"
 
