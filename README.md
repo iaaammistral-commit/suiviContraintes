@@ -1,0 +1,68 @@
+# Suivi de contraintes de portefeuille
+
+Application Streamlit qui lit des inventaires de portefeuille (CSV sur Google
+Drive ou dossier local), affiche les inventaires, liste les contraintes de
+chaque portefeuille, les controle et presente le resultat dans des graphiques
+sur une periode choisie.
+
+## Fonctionnalites
+
+- **Inventaires** : consultation par portefeuille et par date.
+- **Contraintes** : liste des contraintes definies par portefeuille
+  (`config/constraints.yaml`).
+- **Controle** : evaluation des contraintes sur une periode selectionnable,
+  avec :
+  - taux de contraintes respectees par date et portefeuille,
+  - nombre de violations par contrainte sur la periode,
+  - evolution de la valeur d'une contrainte face a sa limite,
+  - tableau detaille a la derniere date.
+
+## Format attendu des fichiers (CSV)
+
+Colonnes : `date, portfolio, nom_titre, code_ISIN, quantite, prix_cloture,
+devise, valeur_boursiere_EUR, pays, secteur_GICS, indicateur_1_20,
+indicateur_alphanterique, emission_CO2_scope1_2_tCO2`
+
+## Installation
+
+```bash
+pip install -r requirements.txt
+python scripts/generate_sample_data.py   # donnees d'exemple (optionnel)
+streamlit run app.py
+```
+
+## Sources de donnees
+
+1. **Dossier local** (par defaut `data/sample/`) : tous les CSV sont charges
+   recursivement.
+2. **Google Drive** : renseignez l'ID du dossier Drive dans la barre laterale
+   et definissez la variable d'environnement :
+
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS=/chemin/vers/compte-service.json
+```
+
+Le compte de service doit avoir un acces lecteur au dossier Drive partage.
+Vous pouvez aussi importer directement des fichiers CSV via la barre laterale.
+
+## Contraintes supportees (`config/constraints.yaml`)
+
+| Type | Parametres | Description |
+|---|---|---|
+| `poids_max_titre` | `limite` (%) | Poids max d'une ligne |
+| `poids_max_groupe` | `colonne`, `valeur` (option), `limite` (%) | Poids max d'un groupe |
+| `poids_min_groupe` | `colonne`, `valeur` (option), `limite` (%) | Poids min d'un groupe |
+| `exclusion_valeurs` | `colonne`, `exclusions` | Valeurs interdites |
+| `nombre_max_lignes` | `limite` | Nombre max de lignes |
+| `moyenne_max_colonne` | `colonne`, `limite` | Moyenne max d'une colonne |
+| `somme_max_colonne` | `colonne`, `limite` | Somme max d'une colonne |
+| `valeur_min_portefeuille` | `limite` (EUR) | Valeur totale minimale |
+
+Les contraintes sont definies par portefeuille ; la cle `defaut` s'applique
+aux portefeuilles sans configuration.
+
+## Tests
+
+```bash
+pytest
+```

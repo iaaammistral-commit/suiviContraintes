@@ -1,0 +1,86 @@
+# Contraintes par portefeuille.
+# Types disponibles :
+#   poids_max_titre        : poids max d'une ligne (%)
+#   poids_max_groupe       : poids max d'un groupe (colonne + valeur optionnelle, %)
+#   poids_min_groupe       : poids min d'un groupe (colonne + valeur optionnelle, %)
+#   exclusion_valeurs     : lignes interdites (colonne + liste exclusions)
+#   nombre_max_lignes     : nombre max de lignes
+#   moyenne_max_colonne   : moyenne max d'une colonne numerique
+#   somme_max_colonne     : somme max d'une colonne numerique
+#   valeur_min_portefeuille : valeur totale minimale (EUR)
+
+PortfolioA:
+  poids_max_titre:
+    type: poids_max_titre
+    description: Poids max d'un titre
+    limite: 5
+  poids_max_secteur:
+    type: poids_max_groupe
+    description: Poids max d'un secteur GICS
+    colonne: secteur_GICS
+    limite: 25
+  exclusion_pays:
+    type: exclusion_valeurs
+    description: Pays exclus
+    colonne: pays
+    exclusions: ["Russie", "Coree du Nord"]
+  nombre_max_lignes:
+    type: nombre_max_lignes
+    description: Nombre max de lignes
+    limite: 60
+  co2_moyen_max:
+    type: moyenne_max_colonne
+    description: Emission CO2 moyenne max (tCO2)
+    colonne: emission_CO2_scope1_2_tCO2
+    limite: 15
+
+PortfolioB:
+  poids_max_titre:
+    type: poids_max_titre
+    description: Poids max d'un titre
+    limite: 12
+  poids_max_pays:
+    type: poids_max_groupe
+    description: Poids max d'un pays
+    colonne: pays
+    limite: 40
+  exclusion_secteur:
+    type: exclusion_valeurs
+    description: Secteurs exclus
+    colonne: secteur_GICS
+    exclusions: ["Armements"]
+  nombre_max_lignes:
+    type: nombre_max_lignes
+    description: Nombre max de lignes
+    limite: 50
+  co2_moyen_max:
+    type: moyenne_max_colonne
+    description: Emission CO2 moyenne max (tCO2)
+    colonne: emission_CO2_scope1_2_tCO2
+    limite: 12
+
+PortfolioC:
+  poids_max_titre:
+    type: poids_max_titre
+    description: Poids max d'un titre
+    limite: 8
+  poids_max_secteur:
+    type: poids_max_groupe
+    description: Poids max d'un secteur GICS
+    colonne: secteur_GICS
+    limite: 35
+  exclusion_devise:
+    type: exclusion_valeurs
+    description: Devises interdites hors EUR/USD
+    colonne: devise
+    exclusions: ["JPY", "CHF"]
+  valeur_min_portefeuille:
+    type: valeur_min_portefeuille
+    description: Valeur totale minimale (EUR)
+    limite: 1000000
+
+defaut:
+  poids_max_titre:
+    type: poids_max_titre
+    description: Poids max d'un titre
+    limite: 10
