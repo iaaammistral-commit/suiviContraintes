@@ -17,6 +17,7 @@ from src.constraints import (
     contraintes_portefeuille,
     violations_par_ligne,
 )
+from src.emailing import config_smtp, construire_message, envoyer_email
 from src.loader import charger_dossier, charger_drive
 
 RACINE = Path(__file__).resolve().parent
@@ -63,6 +64,57 @@ def page_inventaires(df: pd.DataFrame, config: dict) -> None:
 
     affichage = inventaire.drop(columns=["date", "portfolio"])
     st.dataframe(affichage.style.apply(_surligner_violations, axis=1), width="stretch")
+
+    if nb_violations > 0:
+        st.subheader("Signaler par email")
+        destinataire_defaut = ""
+        try:
+            destinataire_defaut = st.secrets.get("SMTP_TO", "")
+        except Exception:  # noqa: BLE001
+            pass
+        destinataire = st.text_input(
+            "Destinataire", value=destinataire_defaut,
+            placeholder="destinataire@exemple.fr",
+        )
+        if st.button("Envoyer l'email de signalement", type="primary"):
+            if not destinataire:
+                st.error("Renseignez une adresse email destinataire.")
+            else:
+                poids = inventaire["valeur_boursiere_EUR"] / (
+                    inventaire["valeur_boursiere_EUR"].sum() or 1.0
+                )
+                violations = [
+                    {
+                        "nom_titre": r["nom_titre"],
+                        "contraintes_violees": r["contraintes_violees"],
+                        "poids": float(poids[i]) * 100,
+                    }
+                    for i, r in inventaire.iterrows()
+                    if r["contraintes_violees"] != "-"
+                ]
+                sujet, corps = construire_message(portefeuille, date, violations)
+                config = config_smtp()
+                if config is None:
+                    st.info(
+                        "Envoi simule (aucun serveur SMTP configure). "
+                        "Definissez SMTP_HOST, SMTP_PORT, SMTP_USER, "
+                        "SMTP_PASSWORD, SMTP_FROM pour activer l'envoi."
+                    )
+                    st.text_area("Sujet", sujet, height=60, disabled=True)
+                    st.text_area("Apercu du message", corps, height=150)
+                else:
+                    try:
+                        envoyer_email(config, destinataire, sujet, corps)
+                        st.success(
+                            f"Email envoye a {destinataire} ({nb_violations} "
+                            "depassement(s) signale(s))."
+                        )
+                    except Exception as exc:  # noqa: BLE001
+                        st.error(f"Echec de l'envoi : {exc}")
+    else:
+        st.info(
+            "Aucun depassement sur cet inventaire : rien a signaler par email."
+        )
 
 
 def page_contraintes(config: dict, portefeuilles: list[str]) -> None:
