@@ -14,12 +14,6 @@ from mistralai.workflows.plugins.mistralai.connectors import (
     uses_connectors,
 )
 
-from worker.analyse import (
-    charger_config,
-    construire_email,
-    controler,
-    parser_inventaires,
-)
 
 drive_connector = connector("google_drive_mcp")
 gmail_connector = connector("gmail")
@@ -64,11 +58,16 @@ async def collecter_inventaires(
 
 @workflows.activity(name="controler-contraintes")
 async def controler_contraintes(textes_csv: list[str]) -> dict:
-    """Controle la derniere date de chaque portefeuille."""
+    """Controle la derniere date de chaque portefeuille et prepare l'email."""
+    from worker.analyse import charger_config, construire_email, controler, parser_inventaires
+
     inventaires = parser_inventaires(textes_csv)
     if inventaires.empty:
-        return {"date": None, "portefeuilles": {}}
-    return controler(inventaires, charger_config())
+        return {"date": None, "portefeuilles": {}, "sujet": None, "corps": None}
+    rapport = controler(inventaires, charger_config())
+    total = sum(len(v) for v in rapport["portefeuilles"].values())
+    sujet, corps = (construire_email(rapport) if total else (None, None))
+    return {**rapport, "sujet": sujet, "corps": corps}
 
 
 @workflows.activity(name="envoyer-alerte")
@@ -104,6 +103,8 @@ class AlerteContraintesWorkflow:
     async def run(self, entree: AlerteInput) -> dict:
         textes = await collecter_inventaires(entree.dossier_drive)
         rapport = await controler_contraintes(textes)
+        sujet = rapport.pop("sujet", None)
+        corps = rapport.pop("corps", None)
         total = sum(len(v) for v in rapport["portefeuilles"].values())
         resultat = {
             "date": rapport["date"],
@@ -113,7 +114,6 @@ class AlerteContraintesWorkflow:
         if total == 0:
             resultat["email"] = "aucun depassement : pas d'envoi"
             return resultat
-        sujet, corps = construire_email(rapport)
         resultat["sujet"] = sujet
         if entree.mode == "envoi":
             if not entree.destinataire:
