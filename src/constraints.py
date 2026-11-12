@@ -138,11 +138,11 @@ def controler_inventaire(df: pd.DataFrame, config: dict) -> pd.DataFrame:
                 nom, desc, float(len(df)), limite, "max", "lignes"
             ))
         elif ctype == "moyenne_max_colonne":
-            colonne = c.get("colonne", "emission_CO2_scope1_2_tCO2")
+            colonne = c.get("colonne", "emission_CO2_scope1_2_tCO2e")
             val = float(df[colonne].mean())
             lignes.append(_evaluer_borne(nom, desc, val, limite, "max", ""))
         elif ctype == "somme_max_colonne":
-            colonne = c.get("colonne", "emission_CO2_scope1_2_tCO2")
+            colonne = c.get("colonne", "emission_CO2_scope1_2_tCO2e")
             val = float(df[colonne].sum())
             lignes.append(_evaluer_borne(nom, desc, val, limite, "max", ""))
         elif ctype == "valeur_min_portefeuille":

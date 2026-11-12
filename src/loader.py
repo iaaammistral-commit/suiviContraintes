@@ -21,11 +21,12 @@ COLONNES = [
     "secteur_GICS",
     "indicateur_1_20",
     "indicateur_alphanumerique",
-    "emission_CO2_scope1_2_tCO2",
+    "emission_CO2_scope1_2_tCO2e",
 ]
 
 ALIAS_COLONNES = {
     "indicateur_alphanterique": "indicateur_alphanumerique",
+    "emission_CO2_scope1_2_tCO2": "emission_CO2_scope1_2_tCO2e",
 }
 
 
@@ -37,7 +38,7 @@ def _nettoie(df: pd.DataFrame) -> pd.DataFrame:
         raise ValueError(f"Colonnes manquantes dans le fichier: {manquantes}")
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
     for c in ["quantite", "prix_cloture", "valeur_boursiere_EUR",
-              "indicateur_1_20", "emission_CO2_scope1_2_tCO2"]:
+              "indicateur_1_20", "emission_CO2_scope1_2_tCO2e"]:
         df[c] = pd.to_numeric(df[c], errors="coerce")
     df = df.dropna(subset=["date"])
     df["portfolio"] = df["portfolio"].astype(str).str.strip()

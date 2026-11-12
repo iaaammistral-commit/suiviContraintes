@@ -21,7 +21,10 @@ sur une periode choisie.
 
 Colonnes : `date, portfolio, nom_titre, code_ISIN, quantite, prix_cloture,
 devise, valeur_boursiere_EUR, pays, secteur_GICS, indicateur_1_20,
-indicateur_alphanterique, emission_CO2_scope1_2_tCO2`
+indicateur_alphanumerique, emission_CO2_scope1_2_tCO2e`
+
+Les anciennes orthographes `indicateur_alphanterique` et
+`emission_CO2_scope1_2_tCO2` restent acceptees a la lecture.
 
 ## Installation
 
