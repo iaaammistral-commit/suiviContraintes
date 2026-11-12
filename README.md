@@ -64,6 +64,26 @@ Vous pouvez aussi importer directement des fichiers CSV via la barre laterale.
 Les contraintes sont definies par portefeuille ; la cle `defaut` s'applique
 aux portefeuilles sans configuration.
 
+## Signalement par email
+
+Dans l'onglet Inventaires, si des lignes sont en violation, un bouton
+« Envoyer l'email de signalement » envoie le detail des depassements de la
+date affichee pour le portefeuille selectionne. Configuration SMTP via
+variables d'environnement :
+
+```bash
+export SMTP_HOST=smtp.exemple.fr
+export SMTP_PORT=587
+export SMTP_USER=expediteur@exemple.fr
+export SMTP_PASSWORD=********
+export SMTP_FROM=expediteur@exemple.fr   # optionnel (defaut : SMTP_USER)
+export SMTP_TO=destinataire@exemple.fr   # optionnel (pre-remplit le champ)
+```
+
+Sans configuration SMTP, un apercu du message est affiche a la place de
+l'envoi. Le port 465 (SSL implicite) n'est pas supporte : utilisez le port
+587 avec TLS (defaut).
+
 ## Tests
 
 ```bash
