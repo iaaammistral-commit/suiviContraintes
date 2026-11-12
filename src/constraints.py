@@ -152,6 +152,54 @@ def controler_inventaire(df: pd.DataFrame, config: dict) -> pd.DataFrame:
     return pd.DataFrame(lignes)
 
 
+def violations_par_ligne(df: pd.DataFrame, config: dict) -> pd.Series:
+    """Pour chaque ligne d'un inventaire, retourne la liste des contraintes
+    violees qui impliquent cette ligne (poids individuel, exclusion, groupe
+    en depassement). Les contraintes globales (nombre de lignes, valeur
+    totale, moyenne/somme) ne sont pas rattachees a une ligne."""
+    portefeuille = str(df["portfolio"].iloc[0])
+    spec = config.get(portefeuille) or config.get("defaut") or {}
+    poids = _poids(df)
+    total = df["valeur_boursiere_EUR"].sum() or 1.0
+    violations = pd.Series([[] for _ in range(len(df))], index=df.index)
+
+    for nom, c in spec.items():
+        if not isinstance(c, dict):
+            continue
+        ctype = c.get("type")
+        limite = c.get("limite")
+
+        if ctype == "poids_max_titre" and limite is not None:
+            seuil = limite / 100 if limite > 1 else limite
+            masque = poids > seuil
+        elif ctype == "exclusion_valeurs":
+            colonne = c.get("colonne", "pays")
+            masque = df[colonne].isin(set(c.get("exclusions", [])))
+        elif ctype in ("poids_max_groupe", "poids_min_groupe") and limite is not None:
+            colonne = c.get("colonne", "secteur_GICS")
+            poids_groupe = (
+                df.groupby(colonne)["valeur_boursiere_EUR"].sum() / total * 100
+            )
+            if ctype == "poids_max_groupe":
+                groupes = poids_groupe[poids_groupe > limite].index
+            else:
+                groupes = poids_groupe[poids_groupe < limite].index
+            valeur_cible = c.get("valeur")
+            if valeur_cible is not None:
+                masque = pd.Series(False, index=df.index)
+                if valeur_cible in groupes:
+                    masque = df[colonne] == valeur_cible
+            else:
+                masque = df[colonne].isin(groupes)
+        else:
+            continue
+
+        for idx in df.index[masque]:
+            violations[idx] = violations[idx] + [nom]
+
+    return violations
+
+
 def controler_periode(df: pd.DataFrame, config: dict) -> pd.DataFrame:
     """Controle chaque (date, portefeuille) du dataframe et agrege."""
     resultats: list[pd.DataFrame] = []

@@ -51,7 +51,7 @@ def _indicateur(i: int) -> str:
 def generer() -> None:
     random.seed(42)
     SORTIE.mkdir(parents=True, exist_ok=True)
-    dates = pd.date_range("2026-06-30", periods=24, freq="15D")
+    dates = pd.date_range(end=pd.Timestamp.now().normalize(), periods=24, freq="15D")
     lignes = []
     for portefeuille, (n_lignes, facteur) in PORTEFEUILLES.items():
         for i, (nom, isin, pays, secteur, prix, co2) in enumerate(TITRES[:n_lignes]):
