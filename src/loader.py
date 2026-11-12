@@ -20,14 +20,18 @@ COLONNES = [
     "pays",
     "secteur_GICS",
     "indicateur_1_20",
-    "indicateur_alphanterique",
+    "indicateur_alphanumerique",
     "emission_CO2_scope1_2_tCO2",
 ]
+
+ALIAS_COLONNES = {
+    "indicateur_alphanterique": "indicateur_alphanumerique",
+}
 
 
 def _nettoie(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    df.columns = [c.strip() for c in df.columns]
+    df.columns = [ALIAS_COLONNES.get(c.strip(), c.strip()) for c in df.columns]
     manquantes = [c for c in COLONNES if c not in df.columns]
     if manquantes:
         raise ValueError(f"Colonnes manquantes dans le fichier: {manquantes}")

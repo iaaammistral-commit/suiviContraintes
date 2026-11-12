@@ -71,7 +71,7 @@ def generer() -> None:
                     "pays": pays,
                     "secteur_GICS": secteur,
                     "indicateur_1_20": (i % 20) + 1,
-                    "indicateur_alphanterique": _indicateur(i),
+                    "indicateur_alphanumerique": _indicateur(i),
                     "emission_CO2_scope1_2_tCO2": co2,
                 })
     df = pd.DataFrame(lignes)
